@@ -4,6 +4,9 @@ import {createTheme, ThemeProvider} from '@mui/material/styles';
 function MyApp({ Component, pageProps }) {
 
   const theme = createTheme({
+    typography:{
+      fontFamily:'Mulish'
+    },
     components:{
       MuiButton:{
         styleOverrides:{
