@@ -88,8 +88,9 @@ const TokenSelect = ({coins}) => {
                         InputProps={{ inputProps: { min: 0, max: 100 - Object.values(selectedCoins).reduce((a, b) => a + b, 0) } }}
                         onChange={(e)=>(
                             setSelectedCoins(prev=>{
-                                if( Number(e.target.value) <= 100-(Object.values(selectedCoins).reduce((a, b) => a + b, 0)-selectedCoins[c]))
-                                prev[c] = Number(e.target.value);
+                                if( Number(e.target.value) <= 100-(Object.values(selectedCoins).reduce((a, b) => a + b, 0)-selectedCoins[c])){
+                                    prev[c] = Number(e.target.value);setAlert(prev=>({...prev, open:false}));
+                                }
                                 else setAlert({open:true,message:'Sum of Percentages exceeds 100.', severity:'error'});
                                 return {...prev};
                             }))}
