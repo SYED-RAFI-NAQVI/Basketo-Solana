@@ -14,7 +14,7 @@ const Navbar = () => {
 
   return (
     <>
-    <AppBar position="fixed" sx={{backgroundColor:'inherit', borderBottom:'1px solid #eee'}} elevation={0} >
+    <AppBar position="fixed" sx={{backgroundColor:'#fff', borderBottom:'1px solid #eee'}} elevation={0} >
       <Container maxWidth="lg">
         <Toolbar disableGutters sx={{display:'grid', gridTemplateColumns:'2fr 3fr 2fr',justifyItems:'center'}} >
             <Typography

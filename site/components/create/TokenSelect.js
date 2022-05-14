@@ -5,19 +5,25 @@ import { useState, useEffect } from 'react';
 import {Box} from '@mui/system';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-
-const tokenList = [
-    {symbol:'BTC', icon:'https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=022'},
-    {symbol:'ETH', icon:'https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=022'},
-    {symbol:'MAT', icon:'https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=022'},
-    {symbol:'SOL', icon:'https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=022'},
-    {symbol:'ARW', icon:'https://cryptologos.cc/logos/bitcoin-btc-logo.png?v=022'},
-]
+import axios from 'axios';
+import RatioChart from './RatioChart.js';
 
 const TokenSelect = ({coins}) => {
     
     const [selectedCoins, setSelectedCoins] = useState({});
     const [alert, setAlert] = useState({open:false, message:'',severity:'success'});
+    const [coinList, setCoinList] = useState([]);
+
+    useEffect(() => {
+        const fetchCoinList = async()=>{
+            const data = await axios.get('https://min-api.cryptocompare.com/data/top/mktcapfull?limit=20&tsym=USD')
+            setCoinList(data.data?.Data);
+        }
+        try {
+            fetchCoinList();
+        } catch (error) { console.log(error); }
+    }, []);
+    
 
   return (
     <>
@@ -38,30 +44,35 @@ const TokenSelect = ({coins}) => {
 
             {/* picking coins*/}
             <Paper 
-            sx={{margin:'15px',borderRadius:'12px', padding:'15px',display:'grid',gap:'15px',gridTemplateColumns:'1fr 1fr 1fr 1fr'}} 
+            sx={{margin:'15px',borderRadius:'12px', padding:'15px',display:'grid',
+                gap:'15px',gridTemplateColumns:'1fr 1fr 1fr 1fr',maxHeight:'350px',overflowY:'scroll'}} 
             elevation={2} >
             {
-                tokenList?.map((t, i)=>(
-                    //individual token card  
+                coinList?.map((coin, i)=>(
+                    //individual coin card  
                     <Paper key={i}
                     sx={{padding:'15px', display:'flex', justifyContent:'center',alignItems:'center',
-                        flexDirection:'column',position:'relative', border:'1px solid #ddd',
-                        borderRadius:'12px', aspectRatio:'1 / 1' }} >
-                        <Avatar src={t?.icon} alt={t?.symbol} />
-                        <Chip label={t?.symbol} 
+                        flexDirection:'column',position:'relative', 
+                        border:`2px solid ${(new Set(Object.keys(selectedCoins))).has(coin?.CoinInfo?.Name) ? 'green':'#ddd'}`,
+                        borderRadius:'12px',maxWidth:'100px' }} >
+                        <Avatar src={`https://www.cryptocompare.com/${coin?.CoinInfo?.ImageUrl}`} 
+                        alt={coin?.CoinInfo?.FullName} 
+                        sx={{width:'50px',height:'50px'}}
+                        />
+                        <Chip label={coin?.CoinInfo?.Name} 
                               size='small' 
-                               />
+                        />
                         <Checkbox sx={{position:'absolute',top:'0px',right:'0px'}}
                         checkedIcon={<RemoveCircleIcon sx={{color:'error.main'}} />} 
                         icon={<AddCircleIcon sx={{color:'success.main'}} />}
-                        checked={ (new Set(Object.keys(selectedCoins))).has(t?.symbol)}
+                        checked={ (new Set(Object.keys(selectedCoins))).has(coin?.CoinInfo?.Name)}
                         onChange={()=>(
                             setSelectedCoins(prev=>{
-                                if(Object.keys(prev).includes(t?.symbol)){
-                                    delete prev[t?.symbol];
+                                if(Object.keys(prev).includes(coin?.CoinInfo?.Name)){
+                                    delete prev[coin?.CoinInfo?.Name];
                                     return {...prev}
                                 }else{
-                                    prev[t?.symbol] = 0;
+                                    prev[coin?.CoinInfo?.Name] = 0;
                                     return {...prev};
                                 }
                             })
@@ -81,7 +92,10 @@ const TokenSelect = ({coins}) => {
                     <ListItem key={i} sx={{display:'flex', justifyContent:'space-between'}}  >
                         <Chip sx={{backgroundColor:'inherit'}}
                         label={c} 
-                        icon={<Avatar src={tokenList.find(e=>e.symbol===c)?.icon} alt={c}  />} />
+                        icon={
+                        <Avatar src={`https://www.cryptocompare.com/${coinList.find(e=>e?.CoinInfo?.Name===c)?.CoinInfo.ImageUrl}`} 
+                        alt={c}/>} 
+                        />
                         <Box>
                         <TextField value={selectedCoins[c]} sx={{minWidth:'90px'}}
                         label='Percentage' size='small' type='number'
@@ -122,7 +136,10 @@ const TokenSelect = ({coins}) => {
             <Typography variant='caption' sx={{color:'error.main'}} >Sum of Percentages must equal 100</Typography>
             }
         </Box>
-        <Box>
+
+        {/* Graphs at right  */}
+        <Box sx={{display:'flex',justifyContent:'center'}} >
+            <RatioChart data={selectedCoins} />
         </Box>
     </Box>
    
